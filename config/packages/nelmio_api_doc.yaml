@@ -1,9 +1,21 @@
 nelmio_api_doc:
     documentation:
+        servers:
+            - url: https://localhost:8000
+              description: API SimRacing
         info:
-            title: My App
-            description: This is an awesome app!
+            title: SimRacing API
+            description: API Documentation pour SimRacing
             version: 1.0.0
-    areas: # to filter documented areas
-        path_patterns:
-            - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
+        components:
+            securitySchemes:
+                Bearer:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+        security:
+            - Bearer: []
+    areas:
+        default:
+            path_patterns:
+                - ^/api(?!/doc$|/doc.json$)
