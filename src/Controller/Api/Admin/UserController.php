@@ -6,18 +6,15 @@ use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Nelmio\ApiDocBundle\Annotation\Model;
-use Nelmio\ApiDocBundle\Annotation\Security;
-use OpenApi\Annotations as OA;
+use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-/**
- * @OA\Tag(name="Users")
- */
 #[Route('/api/admin/users', name: 'api_admin_users_')]
+#[OA\Tag(name: 'Users')]
 class UserController extends AbstractController
 {
     public function __construct(
@@ -27,20 +24,56 @@ class UserController extends AbstractController
     ) {
     }
 
-    /**
-     * Liste tous les utilisateurs (sauf admin)
-     */
     #[Route('', name: 'list', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/admin/users',
+        summary: 'Liste tous les utilisateurs',
+        tags: ['Users'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste des utilisateurs',
+                content: new OA\JsonContent(
+                    type: 'array',
+                    items: new OA\Items(ref: '#/components/schemas/User')
+                )
+            )
+        ]
+    )]
     public function index(): JsonResponse
     {
         $users = $this->userRepository->findNonAdminUsers();
         return $this->json($users, 200, [], ['groups' => 'user:read']);
     }
 
-    /**
-     * Crée un nouvel utilisateur (non admin)
-     */
     #[Route('', name: 'create', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/admin/users',
+        summary: 'Crée un nouvel utilisateur',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password', 'firstName', 'lastName'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email'),
+                    new OA\Property(property: 'password', type: 'string'),
+                    new OA\Property(property: 'firstName', type: 'string'),
+                    new OA\Property(property: 'lastName', type: 'string')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Utilisateur créé',
+                content: new OA\JsonContent(ref: '#/components/schemas/User')
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Données invalides'
+            )
+        ]
+    )]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -66,9 +99,6 @@ class UserController extends AbstractController
         return $this->json($user, 201, [], ['groups' => 'user:read']);
     }
 
-    /**
-     * Met à jour un utilisateur (non admin)
-     */
     #[Route('/{id}', name: 'update', methods: ['PUT'])]
     public function update(int $id, Request $request): JsonResponse
     {
@@ -114,9 +144,6 @@ class UserController extends AbstractController
         return $this->json($user, 200, [], ['groups' => 'user:read']);
     }
 
-    /**
-     * Supprime un utilisateur (non admin)
-     */
     #[Route('/{id}', name: 'delete', methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {

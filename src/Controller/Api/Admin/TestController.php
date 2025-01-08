@@ -21,20 +21,26 @@ class TestController extends AbstractController
      * @OA\Get(
      *     path="/api/admin/test",
      *     summary="Test de connexion admin",
-     *     operationId="testAdmin"
-     * )
-     * @OA\Response(
-     *     response=200,
-     *     description="Retourne un message de succès si l'utilisateur est admin",
-     *     @OA\JsonContent(
-     *        type="object",
-     *        @OA\Property(property="message", type="string"),
-     *        @OA\Property(property="user", type="string")
+     *     operationId="testAdmin",
+     *     tags={"Admin"},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Connexion réussie",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="message", type="string", example="Connexion admin réussie"),
+     *             @OA\Property(property="user", type="string", example="admin@simracing.com")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Non autorisé",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="code", type="integer", example=401),
+     *             @OA\Property(property="message", type="string", example="JWT Token not found")
+     *         )
      *     )
-     * )
-     * @OA\Response(
-     *     response=401,
-     *     description="Non autorisé"
      * )
      * @Security(name="Bearer")
      */
