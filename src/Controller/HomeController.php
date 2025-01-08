@@ -16,19 +16,19 @@ class HomeController extends AbstractController
                 [
                     'title' => 'Découpe carbone',
                     'description' => 'Service de découpe de carbone pour la personnalisation de vos équipements.',
-                    'image' => 'images/services/decoupe-carbone.jpg',
+                    'image' => 'images/services/Decoupe carbone et impression 3d.jpg',
                     'button' => 'Devis gratuit'
                 ],
                 [
                     'title' => 'Gestion de simracing',
                     'description' => 'Bénéficiez nos conseils de spécialistes dans vos configurations.',
-                    'image' => 'images/services/gestion-simracing.jpg',
+                    'image' => 'images/services/Gestion de simracing.jpg',
                     'button' => 'Réservation'
                 ],
                 [
                     'title' => 'Impression 3D',
                     'description' => 'Service d\'impression 3D et prototypage de vos pièces sur-mesure.',
-                    'image' => 'images/services/impression-3d.jpg',
+                    'image' => 'images/services/Impression 3d.jpg',
                     'button' => 'Devis gratuit'
                 ],
             ]
