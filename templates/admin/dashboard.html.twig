@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - LUCAR{% endblock %}
+
+{% block body %}
+<section class="section">
+    <div class="container">
+        <div class="admin-header">
+            <h1 class="title">Dashboard Administration</h1>
+            <button id="logoutBtn" class="btn btn-danger">Déconnexion</button>
+        </div>
+
+        <div class="admin-content">
+            <div class="admin-menu">
+                <a href="#" class="admin-menu-item active">
+                    <i class="fas fa-home"></i> Accueil
+                </a>
+                <a href="#" class="admin-menu-item">
+                    <i class="fas fa-calendar"></i> Réservations
+                </a>
+                <a href="#" class="admin-menu-item">
+                    <i class="fas fa-tools"></i> Services
+                </a>
+                <a href="#" class="admin-menu-item">
+                    <i class="fas fa-comments"></i> Avis
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Vérification du token au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+        window.location.href = '{{ path('admin_login') }}';
+    }
+});
+
+// Gestion de la déconnexion
+document.getElementById('logoutBtn').addEventListener('click', function() {
+    localStorage.removeItem('jwt_token');
+    window.location.href = '{{ path('admin_login') }}';
+});
+</script>
+{% endblock %} 
