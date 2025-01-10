@@ -33,6 +33,7 @@ security:
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc.json, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
