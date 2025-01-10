@@ -25,6 +25,22 @@
             </div>
         </footer>
 
-        {% block javascripts %}{% endblock %}
+        {% block javascripts %}
+        <script>
+            // Intercepteur global pour les requêtes
+            document.addEventListener('DOMContentLoaded', function() {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const originalFetch = window.fetch;
+                    window.fetch = function(url, options = {}) {
+                        options.headers = options.headers || {};
+                        options.headers['Authorization'] = `Bearer ${token}`;
+                        options.credentials = 'include';
+                        return originalFetch(url, options);
+                    };
+                }
+            });
+        </script>
+        {% endblock %}
     </body>
 </html>

@@ -1,5 +1,19 @@
 {% extends 'base.html.twig' %}
 
+{% block javascripts %}
+{{ parent() }}
+<script>
+    // Stocker le token si présent dans l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    if (token) {
+        localStorage.setItem('jwtToken', token);
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+</script>
+{% endblock %}
+
 {% block title %}Dashboard Admin - LUCAR Simracing{% endblock %}
 
 {% block body %}
