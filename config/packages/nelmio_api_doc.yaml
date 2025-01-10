@@ -62,6 +62,27 @@ nelmio_api_doc:
                         lastName:
                             type: string
                             example: Doe
+                Contact:
+                    type: object
+                    required:
+                        - name
+                        - email
+                        - subject
+                        - message
+                    properties:
+                        name:
+                            type: string
+                            example: John Doe
+                        email:
+                            type: string
+                            format: email
+                            example: john@example.com
+                        subject:
+                            type: string
+                            example: Demande d'information
+                        message:
+                            type: string
+                            example: Je souhaiterais avoir plus d'informations...
             securitySchemes:
                 Bearer:
                     type: http
