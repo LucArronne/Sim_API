@@ -21,8 +21,8 @@
         </div>
 
         <div class="nav-icons">
-            <a href="#" class="nav-link user-icon">
-                <i class="fas fa-user"></i>
+            <a href="#" class="nav-link user-icon" id="userIcon">
+                <i class="fas fa-user" id="userIconSymbol"></i>
             </a>
             <a href="#" class="nav-link">
                 <i class="fas fa-shopping-cart"></i>
@@ -82,6 +82,10 @@
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+}
+
+.nav-icons .user-icon.connected {
+    background-color: #28a745;  /* Vert pour l'état connecté */
 }
 
 .nav-icons .user-icon i {
@@ -173,49 +177,88 @@ button[type="submit"],
 </style>
 
 <script>
-document.getElementById('userIcon').addEventListener('click', function(e) {
-    e.preventDefault();
-    const loginForm = document.getElementById('loginForm');
-    loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
-});
-
-document.getElementById('quickLoginForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+// Vérifier si l'utilisateur est connecté au chargement de la page
+document.addEventListener('DOMContentLoaded', function() {
+    const token = localStorage.getItem('token');
+    const userIcon = document.getElementById('userIcon');
     
-    const formData = {
-        username: document.getElementById('loginEmail').value,
-        password: document.getElementById('loginPassword').value
-    };
-
-    try {
-        const response = await fetch('/api/login_check', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            localStorage.setItem('token', data.token);
-            window.location.reload(); // Recharge la page après connexion
-        } else {
-            alert('Email ou mot de passe incorrect');
-        }
-    } catch (error) {
-        alert('Erreur lors de la connexion');
-        console.error('Erreur:', error);
+    if (token) {
+        userIcon.classList.add('connected');
     }
 });
 
-// Fermer le formulaire si on clique en dehors
+// Gestion du clic sur l'icône utilisateur
+document.getElementById('userIcon').addEventListener('click', async function(e) {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+        // Si non connecté, afficher le formulaire de connexion
+        const formHTML = `
+            <div class="login-popup" id="loginPopup">
+                <form id="loginForm">
+                    <div class="form-group">
+                        <input type="email" id="loginEmail" placeholder="Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+                    </div>
+                    <button type="submit">Se connecter</button>
+                </form>
+            </div>
+        `;
+        
+        // Insérer le formulaire
+        if (!document.getElementById('loginPopup')) {
+            this.insertAdjacentHTML('afterend', formHTML);
+            
+            // Gérer la soumission du formulaire
+            document.getElementById('loginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                try {
+                    const response = await fetch('/api/login_check', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: document.getElementById('loginEmail').value,
+                            password: document.getElementById('loginPassword').value
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem('token', data.token);
+                        document.getElementById('userIcon').classList.add('connected');
+                        document.getElementById('loginPopup').remove();
+                        window.location.reload();
+                    } else {
+                        alert('Email ou mot de passe incorrect');
+                    }
+                } catch (error) {
+                    alert('Erreur lors de la connexion');
+                    console.error('Erreur:', error);
+                }
+            });
+        }
+    } else {
+        // Si connecté, déconnexion
+        localStorage.removeItem('token');
+        this.classList.remove('connected');
+        window.location.reload();
+    }
+});
+
+// Fermer le popup si on clique en dehors
 document.addEventListener('click', function(e) {
-    const loginForm = document.getElementById('loginForm');
+    const loginPopup = document.getElementById('loginPopup');
     const userIcon = document.getElementById('userIcon');
-    if (!loginForm.contains(e.target) && e.target !== userIcon) {
-        loginForm.style.display = 'none';
+    
+    if (loginPopup && !loginPopup.contains(e.target) && e.target !== userIcon) {
+        loginPopup.remove();
     }
 });
 

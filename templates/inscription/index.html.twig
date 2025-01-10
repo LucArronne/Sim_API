@@ -51,21 +51,10 @@
         display: none;
     }
 
-    .alert {
-        padding: 15px;
-        margin-bottom: 20px;
-        border-radius: 4px;
-        display: none;
-    }
-
-    .alert-success {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .alert-danger {
-        background-color: #f8d7da;
-        color: #721c24;
+    .password-requirements {
+        font-size: 0.9em;
+        color: #666;
+        margin-top: 5px;
     }
 </style>
 {% endblock %}
@@ -96,6 +85,9 @@
         <div class="form-group">
             <label for="password">Mot de passe</label>
             <input type="password" id="password" name="password" required>
+            <div class="password-requirements">
+                Le mot de passe doit contenir au moins 6 caractères et une majuscule
+            </div>
             <div class="error-message" id="passwordError"></div>
         </div>
 
@@ -115,22 +107,31 @@
 document.getElementById('inscription-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    const successMessage = document.getElementById('success-message');
-    const errorMessage = document.getElementById('error-message');
-    successMessage.style.display = 'none';
-    errorMessage.style.display = 'none';
-
-    // Vérification des mots de passe
+    // Réinitialiser tous les messages d'erreur
+    document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    
     const password = document.getElementById('password').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
-    
-    if (password !== confirmPassword) {
-        errorMessage.textContent = 'Les mots de passe ne correspondent pas';
-        errorMessage.style.display = 'block';
+
+    // Validation du mot de passe
+    if (password.length < 6) {
+        document.getElementById('passwordError').textContent = 'Le mot de passe doit contenir au moins 6 caractères';
+        document.getElementById('passwordError').style.display = 'block';
         return;
     }
 
-    // Données d'inscription
+    if (!/[A-Z]/.test(password)) {
+        document.getElementById('passwordError').textContent = 'Le mot de passe doit contenir au moins une majuscule';
+        document.getElementById('passwordError').style.display = 'block';
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        document.getElementById('confirmPasswordError').textContent = 'Les mots de passe ne correspondent pas';
+        document.getElementById('confirmPasswordError').style.display = 'block';
+        return;
+    }
+
     const formData = {
         email: document.getElementById('email').value,
         firstName: document.getElementById('firstName').value,
@@ -139,8 +140,7 @@ document.getElementById('inscription-form').addEventListener('submit', async fun
     };
 
     try {
-        // 1. Inscription
-        const registerResponse = await fetch('/api/register', {
+        const response = await fetch('/api/register', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -148,41 +148,32 @@ document.getElementById('inscription-form').addEventListener('submit', async fun
             body: JSON.stringify(formData)
         });
 
-        if (registerResponse.ok) {
-            // 2. Connexion automatique après inscription
-            const loginResponse = await fetch('/api/login_check', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    username: formData.email,
-                    password: formData.password
-                })
-            });
+        const data = await response.json();
 
-            const loginData = await loginResponse.json();
-
-            if (loginResponse.ok) {
-                // Stocker le token JWT
-                localStorage.setItem('token', loginData.token);
-                
-                successMessage.textContent = 'Inscription réussie ! Redirection...';
-                successMessage.style.display = 'block';
-                
-                // Redirection vers la page d'accueil
-                setTimeout(() => {
-                    window.location.href = '/';
-                }, 2000);
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.token);
+            
+            // Décodage du token JWT pour vérifier le rôle
+            const tokenParts = data.token.split('.');
+            const payload = JSON.parse(atob(tokenParts[1]));
+            
+            document.getElementById('userIcon').classList.add('connected');
+            document.getElementById('loginPopup').remove();
+            
+            // Redirection selon le rôle
+            if (payload.roles.includes('ROLE_ADMIN')) {
+                window.location.href = '/admin/dashboard';
+            } else {
+                window.location.href = '/';
             }
         } else {
-            const data = await registerResponse.json();
-            errorMessage.textContent = data.message || 'Erreur lors de l\'inscription';
-            errorMessage.style.display = 'block';
+            document.getElementById('emailError').textContent = data.message || 'Erreur lors de l\'inscription';
+            document.getElementById('emailError').style.display = 'block';
         }
     } catch (error) {
-        errorMessage.textContent = 'Erreur lors de l\'inscription';
-        errorMessage.style.display = 'block';
+        document.getElementById('emailError').textContent = 'Erreur lors de l\'inscription';
+        document.getElementById('emailError').style.display = 'block';
         console.error('Erreur:', error);
     }
 });
