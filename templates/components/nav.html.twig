@@ -6,7 +6,11 @@
             </a>
         </div>
         
-        <div class="nav-links">
+        <button class="nav-toggle" id="navToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="nav-links" id="navLinks">
             <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Home</a>
             <a href="{{ path('app_inscription') }}" class="nav-link {% if app.request.get('_route') == 'app_inscription' %}active{% endif %}">Inscription</a>
             <a href="#" class="nav-link">Reservation</a>
@@ -107,6 +111,65 @@ button[type="submit"],
     color: #fff !important;
     text-decoration: none;
 }
+
+/* Bouton hamburger */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+}
+
+/* Styles responsive */
+@media (max-width: 991px) {
+    .nav-content {
+        flex-wrap: wrap;
+        min-height: auto;
+    }
+
+    .nav-logo img {
+        height: 80px;  /* Logo plus petit sur mobile */
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;  /* Caché par défaut sur mobile */
+        width: 100%;
+        order: 3;
+        flex-direction: column;
+        padding: 20px 0;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links a {
+        padding: 15px 0;
+        text-align: center;
+        border-bottom: 1px solid #333;
+    }
+
+    .nav-icons {
+        margin-left: auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .nav-logo img {
+        height: 60px;  /* Encore plus petit sur très petits écrans */
+    }
+
+    .nav-content {
+        padding: 0 10px;
+    }
+}
 </style>
 
 <script>
@@ -153,6 +216,28 @@ document.addEventListener('click', function(e) {
     const userIcon = document.getElementById('userIcon');
     if (!loginForm.contains(e.target) && e.target !== userIcon) {
         loginForm.style.display = 'none';
+    }
+});
+
+// Ajout du script pour le menu hamburger
+document.getElementById('navToggle').addEventListener('click', function() {
+    const navLinks = document.getElementById('navLinks');
+    navLinks.classList.toggle('active');
+});
+
+// Fermer le menu mobile lors du clic sur un lien
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.addEventListener('click', () => {
+        if (window.innerWidth <= 991) {
+            document.getElementById('navLinks').classList.remove('active');
+        }
+    });
+});
+
+// Fermer le menu mobile lors du redimensionnement
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 991) {
+        document.getElementById('navLinks').classList.remove('active');
     }
 });
 </script> 
