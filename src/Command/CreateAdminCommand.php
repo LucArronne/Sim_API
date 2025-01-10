@@ -9,7 +9,12 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 
+#[AsCommand(
+    name: 'app:create-admin',
+    description: 'Crée un utilisateur admin'
+)]
 class CreateAdminCommand extends Command
 {
     protected static $defaultName = 'app:create-admin';
@@ -46,9 +51,12 @@ class CreateAdminCommand extends Command
         $admin->setFirstName('Admin');
         $admin->setLastName('SimRacing');
         $admin->setRoles(['ROLE_ADMIN']);
+        
+        // Ajouter la date de création
+        $admin->setCreatedAt(new \DateTimeImmutable());
 
         // Hasher le mot de passe
-        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'admin123');
+        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'admin');
         $admin->setPassword($hashedPassword);
 
         // Sauvegarder l'admin
@@ -58,7 +66,7 @@ class CreateAdminCommand extends Command
         $io->success('Administrateur créé avec succès !');
         $io->table(
             ['Email', 'Password', 'Roles'],
-            [['admin@simracing.com', 'admin123', 'ROLE_ADMIN']]
+            [['admin@simracing.com', 'admin', 'ROLE_ADMIN']]
         );
 
         return Command::SUCCESS;
