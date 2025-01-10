@@ -8,7 +8,7 @@
         
         <div class="nav-links">
             <a href="{{ path('app_home') }}" class="nav-link {% if app.request.get('_route') == 'app_home' %}active{% endif %}">Home</a>
-            <a href="#" class="nav-link">Inscription</a>
+            <a href="{{ path('app_inscription') }}" class="nav-link {% if app.request.get('_route') == 'app_inscription' %}active{% endif %}">Inscription</a>
             <a href="#" class="nav-link">Reservation</a>
             <a href="#" class="nav-link">DIY part</a>
             <a href="#" class="nav-link">Devis</a>

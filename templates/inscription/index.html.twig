@@ -1,0 +1,149 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription - LUCAR Simracing{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .inscription-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .form-submit {
+        background-color: #007bff;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+    }
+
+    .form-submit:hover {
+        background-color: #0056b3;
+    }
+
+    .error-message {
+        color: #dc3545;
+        margin-top: 5px;
+        font-size: 14px;
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="inscription-container">
+    <h2 class="text-center mb-4">Inscription</h2>
+    
+    <form id="inscriptionForm" method="post">
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required>
+            <div class="error-message" id="emailError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="firstName">Prénom</label>
+            <input type="text" id="firstName" name="firstName" required>
+            <div class="error-message" id="firstNameError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="lastName">Nom</label>
+            <input type="text" id="lastName" name="lastName" required>
+            <div class="error-message" id="lastNameError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" required>
+            <div class="error-message" id="passwordError"></div>
+        </div>
+
+        <div class="form-group">
+            <label for="confirmPassword">Confirmer le mot de passe</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required>
+            <div class="error-message" id="confirmPasswordError"></div>
+        </div>
+
+        <button type="submit" class="form-submit">S'inscrire</button>
+    </form>
+</div>
+
+{% block javascripts %}
+<script>
+document.getElementById('inscriptionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Réinitialiser les messages d'erreur
+    document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    
+    // Validation
+    let isValid = true;
+    
+    // Validation email
+    const email = document.getElementById('email').value;
+    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        document.getElementById('emailError').textContent = 'Email invalide';
+        document.getElementById('emailError').style.display = 'block';
+        isValid = false;
+    }
+    
+    // Validation prénom et nom
+    const firstName = document.getElementById('firstName').value;
+    const lastName = document.getElementById('lastName').value;
+    if (firstName.length < 2) {
+        document.getElementById('firstNameError').textContent = 'Le prénom doit faire au moins 2 caractères';
+        document.getElementById('firstNameError').style.display = 'block';
+        isValid = false;
+    }
+    if (lastName.length < 2) {
+        document.getElementById('lastNameError').textContent = 'Le nom doit faire au moins 2 caractères';
+        document.getElementById('lastNameError').style.display = 'block';
+        isValid = false;
+    }
+    
+    // Validation mot de passe
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    if (password.length < 6) {
+        document.getElementById('passwordError').textContent = 'Le mot de passe doit faire au moins 6 caractères';
+        document.getElementById('passwordError').style.display = 'block';
+        isValid = false;
+    }
+    if (password !== confirmPassword) {
+        document.getElementById('confirmPasswordError').textContent = 'Les mots de passe ne correspondent pas';
+        document.getElementById('confirmPasswordError').style.display = 'block';
+        isValid = false;
+    }
+    
+    if (isValid) {
+        // Ici, vous pouvez ajouter le code pour envoyer les données au serveur
+        console.log('Formulaire valide, prêt à être envoyé');
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 
