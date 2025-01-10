@@ -17,7 +17,7 @@
         </div>
 
         <div class="nav-icons">
-            <a href="{{ path('admin_login') }}" class="nav-link">
+            <a href="#" class="nav-link user-icon">
                 <i class="fas fa-user"></i>
             </a>
             <a href="#" class="nav-link">
@@ -25,4 +25,134 @@
             </a>
         </div>
     </div>
-</nav> 
+</nav>
+
+<style>
+.nav {
+    padding: 20px 0;
+    background-color: #000;
+}
+
+.nav-logo {
+    padding: 15px 0;
+    display: flex;
+    align-items: center;
+}
+
+.nav-logo img {
+    height: 120px;
+    width: auto;
+    margin: 10px 0;
+    object-fit: contain;
+    transform: translateY(5px);
+}
+
+.nav-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+    min-height: 150px;
+}
+
+.nav-links a {
+    color: #fff;
+}
+
+.nav-links a:hover {
+    color: #ccc;
+}
+
+.nav-icons {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-icons .user-icon {
+    background-color: #222;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.nav-icons .user-icon i {
+    font-size: 20px;
+    color: #fff;
+}
+
+.nav-icons .user-icon:hover {
+    background-color: #333;
+    transform: scale(1.1);
+}
+
+.nav-icons .fa-shopping-cart {
+    font-size: 20px;
+    color: #fff;
+}
+
+.nav-link.active {
+    color: #fff;
+    font-weight: bold;
+}
+
+/* Style pour les boutons spécifiques */
+.btn, 
+button[type="submit"],
+.btn-primary {
+    color: #fff !important;
+    text-decoration: none;
+}
+</style>
+
+<script>
+document.getElementById('userIcon').addEventListener('click', function(e) {
+    e.preventDefault();
+    const loginForm = document.getElementById('loginForm');
+    loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
+});
+
+document.getElementById('quickLoginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        username: document.getElementById('loginEmail').value,
+        password: document.getElementById('loginPassword').value
+    };
+
+    try {
+        const response = await fetch('/api/login_check', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            window.location.reload(); // Recharge la page après connexion
+        } else {
+            alert('Email ou mot de passe incorrect');
+        }
+    } catch (error) {
+        alert('Erreur lors de la connexion');
+        console.error('Erreur:', error);
+    }
+});
+
+// Fermer le formulaire si on clique en dehors
+document.addEventListener('click', function(e) {
+    const loginForm = document.getElementById('loginForm');
+    const userIcon = document.getElementById('userIcon');
+    if (!loginForm.contains(e.target) && e.target !== userIcon) {
+        loginForm.style.display = 'none';
+    }
+});
+</script> 
