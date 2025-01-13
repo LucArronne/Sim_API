@@ -14,6 +14,12 @@ use OpenApi\Attributes as OA;
 #[OA\Tag(name: 'Contact')]
 class ContactController extends AbstractController
 {
+    #[Route('/contact', name: 'contact_page', methods: ['GET'])]
+    public function index(): Response
+    {
+        return $this->render('contact/index.html.twig');
+    }
+
     #[Route('/api/contact', name: 'contact_api', methods: ['POST'])]
     public function contact(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -50,12 +56,6 @@ class ContactController extends AbstractController
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }
-
-    #[Route('/contact', name: 'contact_page', methods: ['GET'])]
-    public function index(): Response
-    {
-        return $this->render('contact/index.html.twig');
     }
 
     #[Route('/api/admin/contacts', name: 'get_contacts', methods: ['GET'])]

@@ -16,7 +16,7 @@
             <a href="#" class="nav-link">Reservation</a>
             <a href="#" class="nav-link">DIY part</a>
             <a href="#" class="nav-link">Devis</a>
-            <a href="#" class="nav-link">Contact</a>
+            <a href="{{ path('contact_page') }}" class="nav-link {% if app.request.get('_route') == 'contact_page' %}active{% endif %}">Contact</a>
             <a href="#" class="nav-link">Avis</a>
         </div>
 
