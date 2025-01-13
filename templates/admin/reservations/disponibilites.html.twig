@@ -1,0 +1,161 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des disponibilités - LUCAR Simracing{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .admin-container {
+        max-width: 1200px;
+        margin: 50px auto;
+        padding: 20px;
+    }
+
+    .create-form {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .disponibilites-list {
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .disponibilite-item {
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+
+    .disponibilite-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-container">
+    <div class="back-button">
+        <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour au dashboard
+        </a>
+    </div>
+
+    <h1 class="mb-4">Gestion des disponibilités</h1>
+
+    <div class="create-form">
+        <h3>Créer une nouvelle disponibilité</h3>
+        <form id="createDisponibiliteForm">
+            <div class="form-group">
+                <label for="dateDebut">Date et heure de début</label>
+                <input type="datetime-local" id="dateDebut" required>
+            </div>
+
+            <div class="form-group">
+                <label for="dateFin">Date et heure de fin</label>
+                <input type="datetime-local" id="dateFin" required>
+            </div>
+
+            <div class="form-group">
+                <label for="title">Titre</label>
+                <input type="text" id="title" placeholder="Créneau de simulation">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Créer la disponibilité</button>
+        </form>
+    </div>
+
+    <div class="disponibilites-list">
+        <h3>Disponibilités existantes</h3>
+        {% for disponibilite in disponibilites %}
+            <div class="disponibilite-item">
+                <div class="disponibilite-header">
+                    <h4>{{ disponibilite.title }}</h4>
+                    <span class="badge {{ disponibilite.isAvailable ? 'bg-success' : 'bg-danger' }}">
+                        {{ disponibilite.isAvailable ? 'Disponible' : 'Réservé' }}
+                    </span>
+                </div>
+                <div>
+                    <strong>Début:</strong> {{ disponibilite.dateDebut|date('d/m/Y H:i') }}<br>
+                    <strong>Fin:</strong> {{ disponibilite.dateFin|date('d/m/Y H:i') }}
+                </div>
+                {% if disponibilite.description %}
+                    <div class="mt-2">{{ disponibilite.description }}</div>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="text-center">Aucune disponibilité trouvée</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.getElementById('createDisponibiliteForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    try {
+        const response = await fetch('/admin/disponibilites/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({
+                dateDebut: document.getElementById('dateDebut').value,
+                dateFin: document.getElementById('dateFin').value,
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert('Disponibilité créée avec succès');
+            window.location.reload();
+        } else {
+            alert(data.message || 'Une erreur est survenue');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue');
+    }
+});
+</script>
+{% endblock %} 
