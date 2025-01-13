@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\ContactRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ContactRepository::class)]
 class Contact
@@ -14,16 +15,33 @@ class Contact
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $subjetct = null;
+    #[Assert\NotBlank]
+    private ?string $subject = null;
+
+    #[ORM\Column(type: 'text')]
+    #[Assert\NotBlank]
+    private ?string $message = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?\DateTimeImmutable $createdAt;
+
+    #[ORM\Column]
+    private bool $isRead;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->isRead = false;
+    }
 
     public function getId(): ?int
     {
@@ -35,10 +53,9 @@ class Contact
         return $this->email;
     }
 
-    public function setEmail(string $email): static
+    public function setEmail(?string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -47,22 +64,31 @@ class Contact
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(?string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
-    public function getSubjetct(): ?string
+    public function getSubject(): ?string
     {
-        return $this->subjetct;
+        return $this->subject;
     }
 
-    public function setSubjetct(string $subjetct): static
+    public function setSubject(?string $subject): self
     {
-        $this->subjetct = $subjetct;
+        $this->subject = $subject;
+        return $this;
+    }
 
+    public function getMessage(): ?string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(?string $message): self
+    {
+        $this->message = $message;
         return $this;
     }
 
@@ -71,10 +97,14 @@ class Contact
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function isRead(): bool
     {
-        $this->createdAt = $createdAt;
+        return $this->isRead;
+    }
 
+    public function setIsRead(bool $isRead): self
+    {
+        $this->isRead = $isRead;
         return $this;
     }
 }
