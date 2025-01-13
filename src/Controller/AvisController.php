@@ -13,6 +13,12 @@ use OpenApi\Attributes as OA;
 
 class AvisController extends AbstractController
 {
+    #[Route('/avis', name: 'app_avis')]
+    public function index(): Response
+    {
+        return $this->render('avis/index.html.twig');
+    }
+
     #[Route('/api/avis', name: 'get_avis', methods: ['GET'])]
     #[OA\Get(
         path: '/api/avis',
@@ -115,5 +121,19 @@ class AvisController extends AbstractController
             'success' => true,
             'message' => 'Avis validé avec succès'
         ]);
+    }
+
+    #[Route('/api/avis/valides', name: 'get_avis_valides', methods: ['GET'])]
+    public function getAvisValides(EntityManagerInterface $entityManager): Response
+    {
+        $avis = $entityManager->getRepository(Avis::class)->findBy(
+            ['isValid' => true],
+            ['createdAt' => 'DESC']
+        );
+        
+        return $this->json([
+            'success' => true,
+            'avis' => $avis
+        ], 200, [], ['groups' => 'avis:read']);
     }
 } 

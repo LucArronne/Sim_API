@@ -1,0 +1,213 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Avis - LUCAR Simracing{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Laissez votre avis</h2>
+                    
+                    <form id="avisForm" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="note" class="form-label">Note</label>
+                            <div class="star-rating">
+                                <input type="radio" id="star5" name="note" value="5" required />
+                                <label for="star5" title="5 étoiles">★</label>
+                                <input type="radio" id="star4" name="note" value="4" />
+                                <label for="star4" title="4 étoiles">★</label>
+                                <input type="radio" id="star3" name="note" value="3" />
+                                <label for="star3" title="3 étoiles">★</label>
+                                <input type="radio" id="star2" name="note" value="2" />
+                                <label for="star2" title="2 étoiles">★</label>
+                                <input type="radio" id="star1" name="note" value="1" />
+                                <label for="star1" title="1 étoile">★</label>
+                            </div>
+                            <div class="invalid-feedback">
+                                Veuillez sélectionner une note
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="commentaire" class="form-label">Votre commentaire</label>
+                            <textarea class="form-control" id="commentaire" name="commentaire" rows="5" required></textarea>
+                            <div class="invalid-feedback">
+                                Veuillez écrire un commentaire
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Envoyer mon avis</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des avis validés -->
+            <div class="mt-5">
+                <h3 class="text-center mb-4">Avis de nos clients</h3>
+                <div id="avisList" class="row">
+                    <!-- Les avis seront chargés ici -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating {
+    direction: rtl;
+    display: inline-block;
+    padding: 20px;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    color: #bbb;
+    font-size: 30px;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label,
+.star-rating input:checked ~ label {
+    color: #ffc107;
+}
+
+.star-rating label:hover,
+.star-rating label:hover ~ label {
+    transform: scale(1.1);
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.avis-card {
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.avis-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.avis-note {
+    color: #ffc107;
+    font-weight: bold;
+}
+
+.avis-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadAvis();
+    
+    const form = document.getElementById('avisForm');
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (!form.checkValidity()) {
+            e.stopPropagation();
+            form.classList.add('was-validated');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Vous devez être connecté pour laisser un avis');
+                return;
+            }
+
+            const response = await fetch('/api/avis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    note: parseInt(document.querySelector('input[name="note"]:checked').value),
+                    commentaire: document.getElementById('commentaire').value
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de l\'envoi de l\'avis');
+            }
+
+            alert('Votre avis a été envoyé avec succès et sera publié après validation');
+            form.reset();
+            form.classList.remove('was-validated');
+            loadAvis(); // Recharger les avis
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de l\'envoi de l\'avis');
+        }
+    });
+});
+
+async function loadAvis() {
+    try {
+        const response = await fetch('/api/avis/valides');
+        if (!response.ok) {
+            throw new Error('Erreur lors du chargement des avis');
+        }
+
+        const data = await response.json();
+        displayAvis(data.avis);
+
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+}
+
+function displayAvis(avis) {
+    const container = document.getElementById('avisList');
+    container.innerHTML = '';
+
+    avis.forEach(avis => {
+        const stars = '★'.repeat(avis.note) + '☆'.repeat(5 - avis.note);
+        const date = new Date(avis.createdAt).toLocaleDateString();
+
+        const avisElement = document.createElement('div');
+        avisElement.className = 'col-md-6';
+        avisElement.innerHTML = `
+            <div class="card avis-card mb-3">
+                <div class="card-body">
+                    <div class="avis-header">
+                        <div class="star-rating">${stars}</div>
+                        <div class="avis-date">${date}</div>
+                    </div>
+                    <p class="card-text">${avis.commentaire}</p>
+                    <small class="text-muted">Par ${avis.user.firstName || 'Anonyme'}</small>
+                </div>
+            </div>
+        `;
+
+        container.appendChild(avisElement);
+    });
+}
+</script>
+{% endblock %} 

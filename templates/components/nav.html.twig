@@ -17,7 +17,7 @@
             <a href="#" class="nav-link">DIY part</a>
             <a href="#" class="nav-link">Devis</a>
             <a href="{{ path('contact_page') }}" class="nav-link {% if app.request.get('_route') == 'contact_page' %}active{% endif %}">Contact</a>
-            <a href="#" class="nav-link">Avis</a>
+            <a href="{{ path('app_avis') }}" class="nav-link {% if app.request.get('_route') == 'app_avis' %}active{% endif %}">Avis</a>
         </div>
 
         <div class="nav-icons">
