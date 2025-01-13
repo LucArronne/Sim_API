@@ -81,6 +81,32 @@
         background-color: #ccc;
         cursor: not-allowed;
     }
+
+    .auth-message {
+        text-align: center;
+        padding: 20px;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .auth-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 15px;
+    }
+
+    .btn-inscription {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: white;
+    }
+
+    .btn-inscription:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
 </style>
 {% endblock %}
 
@@ -90,6 +116,14 @@
         <h1 class="text-center mb-4">Réservation</h1>
         
         <div class="reservation-container">
+            <div id="auth-section" style="display: none;" class="auth-message">
+                <p>Pour effectuer une réservation, veuillez vous connecter ou créer un compte.</p>
+                <div class="auth-buttons">
+                    <button onclick="window.location.href='{{ path('app_inscription') }}'" class="btn btn-inscription">Inscription</button>
+                    <button onclick="window.location.href='{{ path('app_login') }}'" class="btn btn-primary">Connexion</button>
+                </div>
+            </div>
+
             <div id="disponibilites-list" class="disponibilites-list">
                 <p class="text-center">Chargement des disponibilités...</p>
             </div>
@@ -113,7 +147,17 @@
 document.addEventListener('DOMContentLoaded', function() {
     const disponibilitesList = document.getElementById('disponibilites-list');
     const reservationForm = document.getElementById('reservation-form');
+    const authSection = document.getElementById('auth-section');
     let selectedDisponibiliteId = null;
+
+    // Vérifier si l'utilisateur est connecté
+    const token = localStorage.getItem('token');
+    if (!token) {
+        authSection.style.display = 'block';
+        disponibilitesList.style.display = 'none';
+    } else {
+        loadDisponibilites();
+    }
 
     // Charger les disponibilités
     async function loadDisponibilites() {
