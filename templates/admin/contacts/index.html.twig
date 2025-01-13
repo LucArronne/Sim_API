@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Messages de contact - Administration{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Messages de contact</h1>
+        <a href="{{ path('admin_dashboard') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour au dashboard
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Email</th>
+                            <th>Sujet</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="messagesTableBody">
+                        <!-- Les messages seront chargés ici -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadMessages();
+});
+
+async function loadMessages() {
+    try {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            throw new Error('Token non trouvé');
+        }
+
+        const response = await fetch('/api/admin/contacts', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        displayMessages(data.contacts || []);
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert(`Erreur lors du chargement des messages: ${error.message}`);
+    }
+}
+
+function displayMessages(messages) {
+    const tbody = document.getElementById('messagesTableBody');
+    tbody.innerHTML = '';
+
+    messages.forEach(message => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${escapeHtml(message.email)}</td>
+            <td>${escapeHtml(message.subject)}</td>
+            <td>${escapeHtml(message.message)}</td>
+            <td>${message.createdAt ? new Date(message.createdAt).toLocaleString() : ''}</td>
+            <td>
+                <button class="btn btn-sm btn-danger" onclick="deleteMessage('${escapeHtml(message.id)}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function deleteMessage(messageId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce message ?')) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/admin/contacts/${messageId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la suppression');
+            }
+
+            loadMessages(); // Recharger la liste
+            alert('Message supprimé avec succès');
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression du message');
+        }
+    }
+}
+
+function escapeHtml(unsafe) {
+    return unsafe
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+</script>
+{% endblock %} 
