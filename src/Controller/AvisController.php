@@ -11,6 +11,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use OpenApi\Attributes as OA;
 
+#[OA\Tag(name: 'Avis')]
 class AvisController extends AbstractController
 {
     #[Route('/avis', name: 'app_avis')]
@@ -26,10 +27,33 @@ class AvisController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Liste des avis',
+                description: 'Liste de tous les avis',
                 content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/Avis')
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'avis',
+                            type: 'array',
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer'),
+                                    new OA\Property(property: 'note', type: 'integer'),
+                                    new OA\Property(property: 'commentaire', type: 'string'),
+                                    new OA\Property(property: 'createdAt', type: 'string', format: 'datetime'),
+                                    new OA\Property(property: 'isValid', type: 'boolean'),
+                                    new OA\Property(
+                                        property: 'user',
+                                        type: 'object',
+                                        properties: [
+                                            new OA\Property(property: 'email', type: 'string'),
+                                            new OA\Property(property: 'firstName', type: 'string'),
+                                            new OA\Property(property: 'lastName', type: 'string')
+                                        ]
+                                    )
+                                ]
+                            )
+                        )
+                    ]
                 )
             )
         ]
@@ -37,6 +61,54 @@ class AvisController extends AbstractController
     public function getAvis(EntityManagerInterface $entityManager): Response
     {
         $avis = $entityManager->getRepository(Avis::class)->findBy([], ['createdAt' => 'DESC']);
+        
+        return $this->json([
+            'success' => true,
+            'avis' => $avis
+        ], 200, [], ['groups' => 'avis:read']);
+    }
+
+    #[Route('/api/avis/valides', name: 'get_avis_valides', methods: ['GET'])]
+    #[OA\Get(
+        path: '/api/avis/valides',
+        summary: 'Récupérer les avis validés',
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Liste des avis validés',
+                content: new OA\JsonContent(
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'avis',
+                            type: 'array',
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer'),
+                                    new OA\Property(property: 'note', type: 'integer'),
+                                    new OA\Property(property: 'commentaire', type: 'string'),
+                                    new OA\Property(property: 'createdAt', type: 'string', format: 'datetime'),
+                                    new OA\Property(
+                                        property: 'user',
+                                        type: 'object',
+                                        properties: [
+                                            new OA\Property(property: 'firstName', type: 'string')
+                                        ]
+                                    )
+                                ]
+                            )
+                        )
+                    ]
+                )
+            )
+        ]
+    )]
+    public function getAvisValides(EntityManagerInterface $entityManager): Response
+    {
+        $avis = $entityManager->getRepository(Avis::class)->findBy(
+            ['isValid' => true],
+            ['createdAt' => 'DESC']
+        );
         
         return $this->json([
             'success' => true,
@@ -121,19 +193,5 @@ class AvisController extends AbstractController
             'success' => true,
             'message' => 'Avis validé avec succès'
         ]);
-    }
-
-    #[Route('/api/avis/valides', name: 'get_avis_valides', methods: ['GET'])]
-    public function getAvisValides(EntityManagerInterface $entityManager): Response
-    {
-        $avis = $entityManager->getRepository(Avis::class)->findBy(
-            ['isValid' => true],
-            ['createdAt' => 'DESC']
-        );
-        
-        return $this->json([
-            'success' => true,
-            'avis' => $avis
-        ], 200, [], ['groups' => 'avis:read']);
     }
 } 

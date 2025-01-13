@@ -120,35 +120,76 @@ class ReservationController extends AbstractController
         responses: [
             new OA\Response(
                 response: 200,
-                description: 'Liste des réservations',
+                description: 'Liste des réservations de l\'utilisateur',
                 content: new OA\JsonContent(
-                    type: 'array',
-                    items: new OA\Items(ref: '#/components/schemas/Reservation')
+                    type: 'object',
+                    properties: [
+                        new OA\Property(
+                            property: 'reservations',
+                            type: 'array',
+                            items: new OA\Items(
+                                properties: [
+                                    new OA\Property(property: 'id', type: 'integer'),
+                                    new OA\Property(property: 'status', type: 'string'),
+                                    new OA\Property(property: 'createdAt', type: 'string', format: 'datetime'),
+                                    new OA\Property(property: 'notes', type: 'string'),
+                                    new OA\Property(
+                                        property: 'disponibilite',
+                                        type: 'object',
+                                        properties: [
+                                            new OA\Property(property: 'dateDebut', type: 'string', format: 'datetime'),
+                                            new OA\Property(property: 'dateFin', type: 'string', format: 'datetime'),
+                                            new OA\Property(property: 'title', type: 'string')
+                                        ]
+                                    )
+                                ]
+                            )
+                        )
+                    ]
                 )
             )
         ]
     )]
     public function getUserReservations(EntityManagerInterface $entityManager): Response
     {
-        $user = $this->getUser();
-        $reservations = $entityManager->getRepository(Reservation::class)->findBy(['user' => $user]);
-        
-        return $this->json([
-            'success' => true,
-            'reservations' => array_map(function($reservation) {
-                return [
+        try {
+            $user = $this->getUser();
+            
+            // Récupérer toutes les réservations de l'utilisateur
+            $reservations = $entityManager->getRepository(Reservation::class)->findBy(
+                ['user' => $user],  // Uniquement les réservations de l'utilisateur connecté
+                ['createdAt' => 'DESC']
+            );
+
+            $formattedReservations = [];
+            foreach ($reservations as $reservation) {
+                $formattedReservations[] = [
                     'id' => $reservation->getId(),
-                    'status' => $reservation->getStatus(),
-                    'createdAt' => $reservation->getCreatedAt()->format('Y-m-d H:i:s'),
-                    'notes' => $reservation->getNotes(),
                     'disponibilite' => [
+                        'id' => $reservation->getDisponibilite()->getId(),
                         'dateDebut' => $reservation->getDisponibilite()->getDateDebut()->format('Y-m-d H:i:s'),
                         'dateFin' => $reservation->getDisponibilite()->getDateFin()->format('Y-m-d H:i:s'),
                         'title' => $reservation->getDisponibilite()->getTitle()
-                    ]
+                    ],
+                    'status' => $reservation->getStatus(), // Affiche le statut (en_attente ou validee)
+                    'createdAt' => $reservation->getCreatedAt()->format('Y-m-d H:i:s'),
+                    'notes' => $reservation->getNotes()
                 ];
-            }, $reservations)
-        ]);
+            }
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Liste des réservations récupérée avec succès',
+                'reservations' => $formattedReservations
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des réservations',
+                'error' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     #[Route('/reservation', name: 'app_reservation', methods: ['GET'])]
