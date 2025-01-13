@@ -119,6 +119,24 @@ nelmio_api_doc:
                             $ref: '#/components/schemas/User'
                         disponibilite:
                             $ref: '#/components/schemas/Disponibilite'
+                Avis:
+                    type: object
+                    properties:
+                        id:
+                            type: integer
+                            readOnly: true
+                        note:
+                            type: integer
+                            minimum: 1
+                            maximum: 5
+                        commentaire:
+                            type: string
+                        createdAt:
+                            type: string
+                            format: date-time
+                            readOnly: true
+                        user:
+                            $ref: '#/components/schemas/User'
             securitySchemes:
                 Bearer:
                     type: http
@@ -190,6 +208,26 @@ nelmio_api_doc:
                                                 items:
                                                     type: string
                                                 example: ["L'email est requis", "Le message est requis"]
+            /api/avis/{id}:
+                delete:
+                    tags:
+                        - Avis
+                    summary: Supprimer un avis
+                    responses:
+                        '200':
+                            description: Avis supprimé avec succès
+                        '404':
+                            description: Avis non trouvé
+            /api/avis/{id}/validate:
+                patch:
+                    tags:
+                        - Avis
+                    summary: Valider un avis
+                    responses:
+                        '200':
+                            description: Avis validé avec succès
+                        '404':
+                            description: Avis non trouvé
     areas:
         path_patterns:
             - ^/api(?!/doc$)
