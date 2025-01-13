@@ -26,23 +26,32 @@ security:
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-        admin:
-            pattern: ^/admin
-            stateless: true
-            jwt: ~
-
         api:
             pattern: ^/api
             stateless: true
             jwt: ~
 
+        admin:
+            pattern: ^/admin
+            stateless: false
+            jwt: ~
+            entry_point: jwt
+
+        main:
+            lazy: true
+            provider: app_user_provider
+
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        # Routes publiques
+        - { path: ^/$, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc.json, roles: PUBLIC_ACCESS }
+        
+        # Routes protégées
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/api/admin, roles: ROLE_ADMIN }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
