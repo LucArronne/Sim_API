@@ -18,6 +18,9 @@
             <a href="#" class="nav-link">Devis</a>
             <a href="{{ path('contact_page') }}" class="nav-link {% if app.request.get('_route') == 'contact_page' %}active{% endif %}">Contact</a>
             <a href="{{ path('app_avis') }}" class="nav-link {% if app.request.get('_route') == 'app_avis' %}active{% endif %}">Avis</a>
+            <span id="ordersLink" style="display: none;">
+                <a href="{{ path('app_orders') }}" class="nav-link {% if app.request.get('_route') == 'app_orders' %}active{% endif %}">Mes commandes</a>
+            </span>
         </div>
 
         <div class="nav-icons">
@@ -339,8 +342,11 @@ document.getElementById('userIcon').addEventListener('click', function(e) {
 // Initialisation au chargement de la page
 document.addEventListener('DOMContentLoaded', function() {
     const token = localStorage.getItem('token');
+    const ordersLink = document.getElementById('ordersLink');
+    
     if (token) {
         document.getElementById('userIcon').classList.add('connected');
+        ordersLink.style.display = 'inline';
     }
 });
 
