@@ -79,6 +79,15 @@ class InscriptionController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        // Validation du mot de passe
+        $password = $data['password'];
+        if (strlen($password) < 6 || !preg_match('/[A-Z]/', $password)) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Le mot de passe doit contenir au moins 6 caractères et une majuscule'
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
         // Vérifier si l'utilisateur existe déjà
         $existingUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $data['email']]);
         if ($existingUser) {

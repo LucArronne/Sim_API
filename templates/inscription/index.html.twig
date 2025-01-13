@@ -102,12 +102,51 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('inscription-form');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirmPassword');
+    
+    // Fonction de validation du mot de passe
+    function validatePassword(password) {
+        const minLength = 6;
+        const hasUpperCase = /[A-Z]/.test(password);
+        
+        const errors = [];
+        if (password.length < minLength) {
+            errors.push(`Le mot de passe doit contenir au moins ${minLength} caractères`);
+        }
+        if (!hasUpperCase) {
+            errors.push('Le mot de passe doit contenir au moins une majuscule');
+        }
+        
+        return errors;
+    }
+
+    // Validation en temps réel du mot de passe
+    passwordInput.addEventListener('input', function() {
+        const errors = validatePassword(this.value);
+        const requirementsDiv = document.querySelector('.password-requirements');
+        
+        if (errors.length > 0) {
+            requirementsDiv.style.color = '#dc3545';
+            requirementsDiv.innerHTML = errors.join('<br>');
+        } else {
+            requirementsDiv.style.color = '#28a745';
+            requirementsDiv.textContent = 'Mot de passe valide ✓';
+        }
+    });
     
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        // Validation du mot de passe
+        const passwordErrors = validatePassword(password);
+        if (passwordErrors.length > 0) {
+            alert(passwordErrors.join('\n'));
+            return;
+        }
         
         if (password !== confirmPassword) {
             alert('Les mots de passe ne correspondent pas');
@@ -130,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
 
-            if (response.status === 201) {  // Vérifie spécifiquement le statut 201 (Created)
+            if (response.status === 201) {
                 alert('Votre compte a été créé avec succès ! Vous pouvez maintenant vous connecter.');
                 window.location.href = '/';
             } else {
