@@ -1,0 +1,191 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Réservation - LUCAR Simracing{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    .section {
+        padding: 50px 0;
+    }
+
+    .reservation-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .disponibilites-list {
+        margin: 20px 0;
+    }
+
+    .disponibilite-item {
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+
+    .disponibilite-item h3 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+
+    .disponibilite-details {
+        margin-bottom: 10px;
+        color: #666;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-submit:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="section">
+    <div class="container">
+        <h1 class="text-center mb-4">Réservation</h1>
+        
+        <div class="reservation-container">
+            <div id="disponibilites-list" class="disponibilites-list">
+                <p class="text-center">Chargement des disponibilités...</p>
+            </div>
+
+            <div id="reservation-form" style="display: none;">
+                <h3>Confirmer la réservation</h3>
+                <div class="form-group">
+                    <label for="notes">Notes spéciales</label>
+                    <textarea id="notes" placeholder="Ajoutez des notes spéciales pour votre réservation (optionnel)"></textarea>
+                </div>
+                <button type="submit" class="btn-submit" id="submit-reservation">Confirmer la réservation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const disponibilitesList = document.getElementById('disponibilites-list');
+    const reservationForm = document.getElementById('reservation-form');
+    let selectedDisponibiliteId = null;
+
+    // Charger les disponibilités
+    async function loadDisponibilites() {
+        try {
+            const response = await fetch('/api/disponibilites');
+            const data = await response.json();
+
+            if (data.success && data.disponibilites.length > 0) {
+                disponibilitesList.innerHTML = data.disponibilites.map(dispo => `
+                    <div class="disponibilite-item">
+                        <h3>${dispo.title || 'Créneau disponible'}</h3>
+                        <div class="disponibilite-details">
+                            <div>Début: ${new Date(dispo.dateDebut).toLocaleString()}</div>
+                            <div>Fin: ${new Date(dispo.dateFin).toLocaleString()}</div>
+                            ${dispo.description ? `<div>Description: ${dispo.description}</div>` : ''}
+                        </div>
+                        <button class="btn-submit" onclick="selectDisponibilite(${dispo.id})">
+                            Sélectionner ce créneau
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                disponibilitesList.innerHTML = '<p class="text-center">Aucune disponibilité pour le moment.</p>';
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            disponibilitesList.innerHTML = '<p class="text-center text-danger">Erreur lors du chargement des disponibilités.</p>';
+        }
+    }
+
+    // Sélectionner une disponibilité
+    window.selectDisponibilite = function(disponibiliteId) {
+        selectedDisponibiliteId = disponibiliteId;
+        reservationForm.style.display = 'block';
+        document.querySelectorAll('.disponibilite-item button').forEach(btn => {
+            btn.disabled = true;
+        });
+    }
+
+    // Soumettre la réservation
+    document.getElementById('submit-reservation').addEventListener('click', async function() {
+        if (!selectedDisponibiliteId) return;
+
+        try {
+            const response = await fetch('/api/reservations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({
+                    disponibiliteId: selectedDisponibiliteId,
+                    notes: document.getElementById('notes').value
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.status === 201) {
+                alert('Réservation créée avec succès !');
+                window.location.reload();
+            } else {
+                alert(data.message || 'Une erreur est survenue');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors de la création de la réservation');
+        }
+    });
+
+    // Charger les disponibilités au chargement de la page
+    loadDisponibilites();
+});
+</script>
+{% endblock %} 

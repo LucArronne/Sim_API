@@ -83,6 +83,42 @@ nelmio_api_doc:
                         message:
                             type: string
                             example: Je souhaiterais avoir plus d'informations...
+                Disponibilite:
+                    type: object
+                    properties:
+                        id:
+                            type: integer
+                            readOnly: true
+                        dateDebut:
+                            type: string
+                            format: date-time
+                        dateFin:
+                            type: string
+                            format: date-time
+                        isAvailable:
+                            type: boolean
+                        title:
+                            type: string
+                        description:
+                            type: string
+                Reservation:
+                    type: object
+                    properties:
+                        id:
+                            type: integer
+                            readOnly: true
+                        status:
+                            type: string
+                        createdAt:
+                            type: string
+                            format: date-time
+                            readOnly: true
+                        notes:
+                            type: string
+                        user:
+                            $ref: '#/components/schemas/User'
+                        disponibilite:
+                            $ref: '#/components/schemas/Disponibilite'
             securitySchemes:
                 Bearer:
                     type: http
