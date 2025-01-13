@@ -79,6 +79,46 @@
                 </div>
             </div>
         </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Avis</h5>
+                    <p class="card-text">Gérer les avis des utilisateurs</p>
+                    <button onclick="loadAvis()" class="btn btn-primary">Voir les avis</button>
+                </div>
+            </div>
+            <!-- Modal pour afficher les avis -->
+            <div class="modal fade" id="avisModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Liste des Avis</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Utilisateur</th>
+                                            <th>Note</th>
+                                            <th>Commentaire</th>
+                                            <th>Date</th>
+                                            <th>Statut</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="avisTableBody">
+                                        <!-- Les avis seront insérés ici -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -328,6 +368,119 @@ async function deleteUser(userId) {
         } catch (error) {
             console.error('Erreur:', error);
             alert('Erreur lors de la suppression de l\'utilisateur');
+        }
+    }
+}
+
+async function loadAvis() {
+    try {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            throw new Error('Token non trouvé');
+        }
+
+        const response = await fetch('/api/avis', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        displayAvis(data.avis);
+        
+        // Afficher le modal
+        const modal = new bootstrap.Modal(document.getElementById('avisModal'));
+        modal.show();
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert(`Erreur lors du chargement des avis: ${error.message}`);
+    }
+}
+
+function displayAvis(avis) {
+    const tbody = document.getElementById('avisTableBody');
+    tbody.innerHTML = '';
+
+    avis.forEach(avis => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${escapeHtml(avis.user.email)}</td>
+            <td>${escapeHtml(avis.note.toString())}/5</td>
+            <td>${escapeHtml(avis.commentaire)}</td>
+            <td>${new Date(avis.createdAt).toLocaleString()}</td>
+            <td>
+                <span class="badge ${avis.isValid ? 'bg-success' : 'bg-warning'}">
+                    ${avis.isValid ? 'Validé' : 'En attente'}
+                </span>
+            </td>
+            <td>
+                ${!avis.isValid ? 
+                    `<button class="btn btn-sm btn-success" onclick="validateAvis('${avis.id}')">
+                        <i class="fas fa-check"></i>
+                    </button>` : ''
+                }
+                <button class="btn btn-sm btn-danger" onclick="deleteAvis('${avis.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function validateAvis(avisId) {
+    if (confirm('Voulez-vous valider cet avis ?')) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/avis/${avisId}/validate`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la validation');
+            }
+
+            loadAvis(); // Recharger la liste
+            alert('Avis validé avec succès');
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la validation de l\'avis');
+        }
+    }
+}
+
+async function deleteAvis(avisId) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cet avis ?')) {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/avis/${avisId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la suppression');
+            }
+
+            loadAvis(); // Recharger la liste
+            alert('Avis supprimé avec succès');
+
+        } catch (error) {
+            console.error('Erreur:', error);
+            alert('Erreur lors de la suppression de l\'avis');
         }
     }
 }
