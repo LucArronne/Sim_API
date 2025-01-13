@@ -65,18 +65,18 @@ nelmio_api_doc:
                 Contact:
                     type: object
                     required:
-                        - name
                         - email
+                        - name
                         - subject
                         - message
                     properties:
-                        name:
-                            type: string
-                            example: John Doe
                         email:
                             type: string
                             format: email
                             example: john@example.com
+                        name:
+                            type: string
+                            example: John Doe
                         subject:
                             type: string
                             example: Demande d'information
@@ -110,7 +110,51 @@ nelmio_api_doc:
                                 application/json:
                                     schema:
                                         $ref: '#/components/schemas/Token'
+            /api/contact:
+                post:
+                    tags:
+                        - Contact
+                    summary: Envoyer un message de contact
+                    description: Permet d'envoyer un message via le formulaire de contact
+                    requestBody:
+                        required: true
+                        content:
+                            application/json:
+                                schema:
+                                    $ref: '#/components/schemas/Contact'
+                    responses:
+                        '201':
+                            description: Message envoyé avec succès
+                            content:
+                                application/json:
+                                    schema:
+                                        type: object
+                                        properties:
+                                            success:
+                                                type: boolean
+                                                example: true
+                                            message:
+                                                type: string
+                                                example: Votre message a été envoyé avec succès
+                        '400':
+                            description: Données invalides
+                            content:
+                                application/json:
+                                    schema:
+                                        type: object
+                                        properties:
+                                            success:
+                                                type: boolean
+                                                example: false
+                                            message:
+                                                type: string
+                                                example: Données invalides
+                                            errors:
+                                                type: array
+                                                items:
+                                                    type: string
+                                                example: ["L'email est requis", "Le message est requis"]
     areas:
-        default:
-            path_patterns:
-                - ^/api(?!/doc$|/doc.json$)
+        path_patterns:
+            - ^/api(?!/doc$)
+        host_patterns: []

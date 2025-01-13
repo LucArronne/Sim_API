@@ -18,3 +18,14 @@ api_doc_json:
     path: /api/doc.json
     controller: nelmio_api_doc.controller.swagger
     methods: GET
+
+# Routes Contact
+contact_api:
+    path: /api/contact
+    controller: App\Controller\ContactController::contact
+    methods: POST
+
+contact_page:
+    path: /contact
+    controller: App\Controller\ContactController::index
+    methods: GET
